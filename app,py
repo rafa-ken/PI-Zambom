@@ -1,7 +1,26 @@
-from flask import Flask
+import os
+from flask import Flask, request, jsonify
+from flask_pymongo import PyMongo
+from bson.objectid import ObjectId
+from pymongo import ReturnDocument
+from dotenv import load_dotenv
+from functools import wraps
+from pymongo import ReturnDocument
+
+# Carregar variáveis de ambiente
+load_dotenv()
 
 app = Flask(__name__)
 
-@app.route("/")
-def home():
-    return "Serviço rodando com sucesso"
+app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://localhost:27017/testdb")
+mongo = PyMongo(app)
+
+@app.route("/teste", methods=["GET"])
+def get_teste():
+    notes = mongo.db.notes.find()
+    output = [{"id": str(note["_id"]), "title": note["title"], "content": note["content"]} for note in notes]
+    return jsonify(output)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
